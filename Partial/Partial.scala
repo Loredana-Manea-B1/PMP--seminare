@@ -23,23 +23,34 @@ import com.cra.figaro.library.atomic.discrete.FromRange
 
 object Partial {
   def main(args: Array[String]): Unit ={
-    val numberOfSides = Select(0.16 -> 1,0.16 -> 2,0.16 -> 3, 0.16 -> 4, 0.16 -> 5,0.16 -> 6)
     val roll=Chain(numberOfSides, ((i: Int) => FromRange(1, i+1)))
-
+   
     //1
 
-    println(VariableElimination.probability(numberOfSides, 6))
 
     //2
   val die1 = FromRange(1, 6)
   val die2 = FromRange(1, 6)
+  val die3= FromRange(1, 6)
+  val die4=FromRange(1, 6)
   val total = Apply(die1, die2, (i1: Int, i2: Int) => i1 + i2)
-  total.addCondition((i: Int) => i >7)
+  val total2 = Apply(die3, die4, (i1: Int, i2: Int) => i1 + i2)
+  total.addCondition((i: Int) => i >2)
   println(VariableElimination.probability(total, 7))
   println(VariableElimination.probability(total, 11))
+  println(VariableElimination.probability(total2, 2))
+   println(VariableElimination.probability(total2, 3))
+    println(VariableElimination.probability(total2, 12))
+
  
 
-
+  val Play = Apply(player1, player2 
+      (total: Int, total2: Int) =>
+        else if ( total==7 || total==11) //p1Wins
+        else if( total2==2 || total2==3|| total2==12) //p2wins
+        else //remiza
+    
+         )
 
 
   //3
@@ -48,11 +59,11 @@ object Partial {
   //4 
 
   //5 
-  play(p1Wins: Element[Int], p2Wins: Element[Int], no: Int) :Element[Int]
+ // play(p1Wins: Element[Int], p2Wins: Element[Int], no: Int) :Element[Int]
   //6 
 
 
-  //7
+
 
 
     
