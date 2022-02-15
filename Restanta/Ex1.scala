@@ -8,30 +8,58 @@ import com.cra.figaro.algorithm.factored.beliefpropagation.{BeliefPropagation, M
 import com.cra.figaro.algorithm.factored.beliefpropagation.MPEBeliefPropagation
 import com.cra.figaro.algorithm.OneTimeMPE
 
-object lab13
+//1. Să se definească o clasă abstractă care modelează structura unei stări. Elementul
+//pentru modelarea vânzărilor poate fi definit aici.
+//2. Să se definească o clasă care modelează starea inițială.
+//3. Să se definească o clasă care modelează următoarea stare în funcție de starea curentă.
+//4. Să se definească o secvență de stări corespunzătoare unui an. Se va scrie o funcție
+//care creează secvență de lungime dată ca o listă (se va folosi operatorul “:+” pentru a
+//adăuga un element la sfârșitul listei).
+//5. Observând că în primele 2 luni vânzările au avut un nivel crescut și că în luna a treia un
+//nivel mediu, să se prezică evoluția prețurilor pentru luna a patra, utilizând algoritmii MPE
+//Variable Elimination, MPE Belief Propagation și Metropolis Hasting Annealer. Comparati
+//valorile și adăugați sub formă de comentarii cele observate.
+//6. Observând că în lunile 4 și 5 vânzările au stagnat, să se calculeze probabilitățile ca
+//prețurile să fi scăzut în lunile 2 și 3
+//7. Observând că în în primele 3 luni vânzările au avut un nivel mediu iar în luna a patra un
+//nivel foarte scăzut, care este cea mai probabilă cauză din luna a treia ce a dus la
+//această scădere.
+
+
+
+
+
+
+object ex1
 {
 	abstract class State
 	{
 		val pret = Select( 0.4-> 'creste, 0.2 -> 'stagneaza, 0.4 -> 'scade)
 
-		 def vanzari: (Element[Boolean]) = {
+		 def vanzare: (Element[Boolean]) = {
 		CPD( pret,
-			('creste) -> Flip(),
-			('stagneaza) -> Flip(),
-			('scade) -> Flip()
-	}
+			('creste) -> Flip(0.4),
+			('stagneaza) -> Flip(0.2),
+			('scade) -> Flip(0.4)
+
+		 }
 
 	}
 
 	class InitialState() extends State
 	{
-		val pret = Flip(0.4)
+		val pret = Constant('creste)
 	}
 
 	class NextState(current: State) extends State
 	{
-		val pret =	If(current.pret, Flip(0.6), Flip(0.3))
+		val pret =  CPD(current.pret,
+			creste ->Select(0.3 -> 'creste, 0.6 -> 'stagneaza, 0.1 -> 'scade) ,
+			stagneaza -> Select(0.2 -> 'creste, 0.6 -> 'stagneaza, 0.2 -> 'scade),
+			scade -> Select(0.3 -> 'creste, 0.1 -> 'stagneaza, 0.6 -> 'scade)
 	}
+
+
 
 	def stateSequence(n: Int): List[State] =
 	{
@@ -49,7 +77,7 @@ object lab13
 		val stateSeq = stateSequence(obsSeq.length)
 		for { i <- 0 until obsSeq.length }
 		{
-			stateSeq(i).vanzari.observe(obsSeq(obsSeq.length - 1 - i))
+			stateSeq(i).vanzare.observe(obsSeq(obsSeq.length - 1 - i))
 		}
 
 		algorithm.start()
@@ -57,7 +85,7 @@ object lab13
 		{
 			print(obsSeq(obsSeq.length - 1 - i))
 			print("\t")
-			println(algorithm.mostLikelyValue(stateSeq(stateSeq.length - 1 - i).preturi))
+			println(algorithm.mostLikelyValue(stateSeq(stateSeq.length - 1 - i).pret))
 		}
 
 		algorithm.kill()
@@ -73,6 +101,8 @@ object lab13
 		run(obsSeq, MPEVariableElimination())
 		println("MPE belief propagation")
 		run(obsSeq, MPEBeliefPropagation(12))
+		println("Simulated annealing")
+		run(obsSeq, MPEBeliefPropagation(2))
 		println("Simulated annealing")
 		run(obsSeq, MetropolisHastingsAnnealer(100000, ProposalScheme.default, Schedule.default(1.0)))
 
